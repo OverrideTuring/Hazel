@@ -17,7 +17,7 @@ namespace Hazel {
 		inline unsigned int GetHeight() const override { return m_Data.Height; }
 
 		// Window attributes
-		inline void SetEventCallback(const EventCategory& callback) override { m_Data.EventCallback = callback; }
+		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 	private:
@@ -30,7 +30,8 @@ namespace Hazel {
 			std::string Title;
 			unsigned int Width, Height;
 			bool VSync;
-			EventCategory EventCallback;
+
+			EventCallbackFn EventCallback;
 		};
 		WindowData m_Data;
 	};
