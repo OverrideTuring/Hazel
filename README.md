@@ -7,7 +7,7 @@ Hazel 是一个从零开始编写的 C++ 游戏引擎项目，开发过程参考
 ## 构建环境
 
 - Windows 10 或更高版本
-- Visual Studio（需安装“使用 C++ 的桌面开发”工作负载）
+- Visual Studio 2026（需安装“使用 C++ 的桌面开发”工作负载）
 - Windows 10 SDK
 - 支持项目当前所用 `v145` 平台工具集的 MSVC
 - C++17
@@ -17,33 +17,43 @@ Hazel 是一个从零开始编写的 C++ 游戏引擎项目，开发过程参考
 
 - `Debug | x64`
 - `Release | x64`
+- `Dist | x64`
+
+三个项目统一使用动态运行库：Debug 为 `/MDd`，Release、Dist 为 `/MD`。Debug 启用引擎断言；Debug、Release 保留调试符号，Hazel 和 Sandbox 的 Dist 关闭调试符号。
 
 ## 构建与运行
 
-1. 使用 Visual Studio 打开根目录下的 `Hazel.sln`。
-2. 选择 `Debug | x64` 或 `Release | x64` 配置。
-3. 将 `Sandbox` 设置为启动项目。
+1. 运行根目录下的 `GenerateProjects.bat`，根据 `premake5.lua` 重新生成工程。
+2. 使用 Visual Studio 打开 `Hazel.slnx`，选择 Debug、Release 或 Dist 的 x64 配置。
+3. 确认 `Sandbox` 为启动项目。
 4. 构建并运行解决方案。
+
+生成脚本同时更新传统格式的 `Hazel.sln`，可用于需要该格式的工具；两个解决方案都包含 GLFW、Hazel 和 Sandbox。修改构建配置时应修改 Premake 脚本并重新生成，直接修改 `.vcxproj` 会在下次生成时被覆盖。
 
 构建中间文件会输出到：
 
 ```text
-bin-int/<配置>-<平台>/<项目名>/
+bin-int/<配置>-windows-x86_64/<项目名>/
 ```
 
 最终产物会输出到：
 
 ```text
-bin/<配置>-<平台>/<项目名>/
+bin/<配置>-windows-x86_64/<项目名>/
 ```
 
 其中，`Hazel` 会生成动态库，`Sandbox` 会生成可执行程序。`Sandbox` 通过项目引用依赖 `Hazel`，构建时会先构建引擎项目，并将运行所需的动态库复制到 Sandbox 的输出目录。
+
+GLFW 编译为静态库，其产物和中间文件分别位于 `Hazel/vendor/GLFW/bin/` 和 `Hazel/vendor/GLFW/bin-int/` 下的对应配置目录。
 
 ## 项目结构
 
 ```text
 Hazel/
-├── Hazel.sln                  # Visual Studio 解决方案
+├── Hazel.slnx                 # Visual Studio 2026 解决方案
+├── Hazel.sln                  # 同步生成的传统格式解决方案
+├── premake5.lua               # 工程配置
+├── GenerateProjects.bat       # 重新生成 VS 工程
 ├── Hazel/                     # 引擎项目，构建为动态库
 │   ├── Hazel.vcxproj
 │   └── src/
@@ -98,12 +108,16 @@ EntryPoint.h 中的 main()
 目前已完成：
 
 - Hazel 动态库与 Sandbox 客户端的工程划分
-- Debug、Release 两套 x64 构建配置
+- Debug、Release、Dist 三套 x64 构建配置
 - Windows DLL API 导入与导出
 - 基础 `Application` 类型
 - 引擎侧统一入口和客户端应用工厂
+- 基于 GLFW 的窗口与 OpenGL 上下文
+- 窗口、键盘和鼠标事件
+- 引擎和客户端日志
+- 基础图层与图层栈
 
-窗口、事件、输入、渲染等引擎模块尚未加入。当前 `Application::Run()` 仍是一个空的无限循环，运行 Sandbox 后需要手动终止程序。
+当前 Sandbox 会逐帧更新示例图层、输出日志并将窗口清屏为紫色，关闭窗口后退出。完整渲染器、场景、资源和物理系统尚未加入。
 
 ## 后续开发
 

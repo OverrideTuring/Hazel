@@ -1,3 +1,20 @@
+-- Keep the legacy solution in sync using Premake's native .sln generator.
+-- Only solution serialization uses the legacy format; projects still target VS 2026.
+if _ACTION == "vs2026" then
+    local action = premake.action.get("vs2026")
+    local legacyAction = premake.action.get("vs2022")
+    local generateWorkspace = action.onWorkspace
+
+    action.onWorkspace = function(wks)
+        generateWorkspace(wks)
+        local solutionVersion = action.vstudio.solutionVersion
+        action.vstudio.solutionVersion = legacyAction.vstudio.solutionVersion
+        local success, message = pcall(legacyAction.onWorkspace, wks)
+        action.vstudio.solutionVersion = solutionVersion
+        if not success then error(message) end
+    end
+end
+
 workspace "Hazel"
     architecture "x64"
     startproject "Sandbox"
@@ -61,19 +78,25 @@ project "Hazel"
 
         postbuildcommands
         {
-            ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
+            ('{MKDIR} "../bin/' .. outputdir .. '/Sandbox"'),
+            ('{COPY} "%{cfg.buildtarget.relpath}" "../bin/' .. outputdir .. '/Sandbox"')
         }
 
     filter "configurations:Debug"
-        defines "HZ_DEBUG"
+        defines { "HZ_DEBUG", "HZ_ENABLE_ASSERTS" }
+        runtime "Debug"
         symbols "On"
 
     filter "configurations:Release"
         defines "HZ_RELEASE"
+        runtime "Release"
+        symbols "On"
         optimize "On"
 
     filter "configurations:Dist"
         defines "HZ_DIST"
+        runtime "Release"
+        symbols "Off"
         optimize "On"
 
 
@@ -114,13 +137,18 @@ project "Sandbox"
         }
 
     filter "configurations:Debug"
-        defines "HZ_DEBUG"
+        defines { "HZ_DEBUG", "HZ_ENABLE_ASSERTS" }
+        runtime "Debug"
         symbols "On"
 
     filter "configurations:Release"
         defines "HZ_RELEASE"
+        runtime "Release"
+        symbols "On"
         optimize "On"
 
     filter "configurations:Dist"
         defines "HZ_DIST"
+        runtime "Release"
+        symbols "Off"
         optimize "On"
