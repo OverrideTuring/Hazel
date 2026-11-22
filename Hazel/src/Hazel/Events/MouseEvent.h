@@ -52,16 +52,18 @@ namespace Hazel {
 	{
 	public:
 		inline int GetMouseButton() const { return m_Button; }
+		inline int GetModifiers() const { return m_Modifiers; }
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
 	protected:
-		MouseButtonEvent(int button) : m_Button(button) {}
+		MouseButtonEvent(int button, int modifiers = 0) : m_Button(button), m_Modifiers(modifiers) {}
 		int m_Button;
+		int m_Modifiers;
 	};
 
 	class HAZEL_API MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(int button) : MouseButtonEvent(button) {}
+		MouseButtonPressedEvent(int button, int modifiers = 0) : MouseButtonEvent(button, modifiers) {}
 
 		std::string ToString() const override
 		{
@@ -76,7 +78,7 @@ namespace Hazel {
 	class HAZEL_API MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonReleasedEvent(int button) : MouseButtonEvent(button) {}
+		MouseButtonReleasedEvent(int button, int modifiers = 0) : MouseButtonEvent(button, modifiers) {}
 
 		std::string ToString() const override
 		{
@@ -86,5 +88,21 @@ namespace Hazel {
 		}
 
 		EVENT_CLASS_TYPE(MouseButtonReleased)
+	};
+
+	class HAZEL_API MouseLeftWindowEvent : public Event
+	{
+	public:
+		MouseLeftWindowEvent() {}
+
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseLeftWindowEvent";
+			return ss.str();
+		}
+
+		EVENT_CLASS_TYPE(MouseLeftWindow)
+		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 	};
 }

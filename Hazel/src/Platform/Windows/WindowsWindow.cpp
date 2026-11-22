@@ -63,38 +63,55 @@ namespace Hazel {
 			data.EventCallback(event);
 		});
 
+		glfwSetWindowFocusCallback(m_Window, [](GLFWwindow* window, int focused) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			if (focused) {
+				WindowFocusEvent event;
+				data.EventCallback(event);
+			} else {
+				WindowLostFocusEvent event;
+				data.EventCallback(event);
+			}
+		});
+
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			switch (action) {
 				case GLFW_PRESS: {
-					KeyPressedEvent event(key, 0);
+					KeyPressedEvent event(key, 0, mods);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE: {
-					KeyReleasedEvent event(key);
+					KeyReleasedEvent event(key, mods);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_REPEAT: {
-					KeyPressedEvent event(key, 1);
+					KeyPressedEvent event(key, 1, mods);
 					data.EventCallback(event);
 					break;
 				}
 			}
 		});
 
+		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int codepoint) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			KeyTypedEvent event(codepoint);
+			data.EventCallback(event);
+		});
+
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			switch (action) {
 				case GLFW_PRESS: {
-					MouseButtonPressedEvent event(button);
+					MouseButtonPressedEvent event(button, mods);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE: {
-					MouseButtonReleasedEvent event(button);
+					MouseButtonReleasedEvent event(button, mods);
 					data.EventCallback(event);
 					break;
 				}
@@ -111,6 +128,19 @@ namespace Hazel {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			MouseMovedEvent event((float)xPos, (float)yPos);
 			data.EventCallback(event);
+		});
+
+		glfwSetCursorEnterCallback(m_Window, [](GLFWwindow* window, int entered) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			if (entered) {
+				double x, y;
+				glfwGetCursorPos(window, &x, &y);
+				MouseMovedEvent event(static_cast<float>(x), static_cast<float>(y));
+				data.EventCallback(event);
+			} else {
+				MouseLeftWindowEvent event;
+				data.EventCallback(event);
+			}
 		});
 	}
 
