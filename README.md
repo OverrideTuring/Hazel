@@ -10,6 +10,7 @@ Hazel 是一个从零开始编写的 C++ 游戏引擎项目，开发过程参考
 - Visual Studio 2026（需安装“使用 C++ 的桌面开发”工作负载）
 - Windows 10 SDK
 - 支持项目当前所用 `v145` 平台工具集的 MSVC
+- Premake 5.0.0（支持 `vs2026`），放置于 `vendor/bin/premake/premake5.exe`
 - C++17
 - x64 平台
 
@@ -19,16 +20,24 @@ Hazel 是一个从零开始编写的 C++ 游戏引擎项目，开发过程参考
 - `Release | x64`
 - `Dist | x64`
 
-三个项目统一使用动态运行库：Debug 为 `/MDd`，Release、Dist 为 `/MD`。Debug 启用引擎断言；Debug、Release 保留调试符号，Hazel 和 Sandbox 的 Dist 关闭调试符号。
+四个项目统一使用动态运行库：Debug 为 `/MDd`，Release、Dist 为 `/MD`。Debug 启用引擎断言；Debug、Release 保留调试符号，Hazel 和 Sandbox 的 Dist 关闭调试符号。
 
 ## 构建与运行
+
+首次克隆时使用 `git clone --recurse-submodules <仓库地址>`，同时获取 GLFW 和 spdlog。若已使用普通 `git clone`，在项目根目录执行：
+
+```powershell
+git submodule update --init --recursive
+```
+
+确认 `vendor/bin/premake/premake5.exe` 存在；缺少时可从 [Premake 官方发布页](https://github.com/premake/premake-core/releases) 下载 Windows 版并放到该位置。
 
 1. 运行根目录下的 `GenerateProjects.bat`，根据 `premake5.lua` 重新生成工程。
 2. 使用 Visual Studio 打开 `Hazel.slnx`，选择 Debug、Release 或 Dist 的 x64 配置。
 3. 确认 `Sandbox` 为启动项目。
 4. 构建并运行解决方案。
 
-生成脚本同时更新传统格式的 `Hazel.sln`，可用于需要该格式的工具；两个解决方案都包含 GLFW、Hazel 和 Sandbox。修改构建配置时应修改 Premake 脚本并重新生成，直接修改 `.vcxproj` 会在下次生成时被覆盖。
+生成脚本同时更新传统格式的 `Hazel.sln`，可用于需要该格式的工具；两个解决方案都包含 GLFW、Glad、Hazel 和 Sandbox。修改构建配置时应修改 Premake 脚本并重新生成，直接修改 `.vcxproj` 会在下次生成时被覆盖。
 
 构建中间文件会输出到：
 

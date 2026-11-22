@@ -6,11 +6,11 @@ public:
 	}
 
 	void OnUpdate() override {
-		HZ_INFO("ExampleLayer::Update");
+		// HZ_INFO("ExampleLayer::Update");
 	}
 
 	void OnEvent(Hazel::Event& event) override {
-		HZ_TRACE("{0}", event.ToString());
+		// HZ_TRACE("{0}", event.ToString());
 	}
 };
 
@@ -18,6 +18,7 @@ class Sandbox : public Hazel::Application {
 public:
 	Sandbox() {
 		PushLayer(new ExampleLayer());
+		PushLayer(new Hazel::ImGuiLayer());
 	}
 
 	~Sandbox() {

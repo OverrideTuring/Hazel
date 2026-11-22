@@ -32,9 +32,29 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["GLFW"] = "Hazel/vendor/GLFW/include"
 IncludeDir["Glad"] = "Hazel/vendor/Glad/include"
+IncludeDir["ImGui"] = "Hazel/vendor/imgui"
+
+-- The pinned vendor scripts use flags(), removed in Premake 5.0.
+-- Translate their two legacy options without editing the GLFW submodule.
+local originalFlags = flags
+if not originalFlags then
+    flags = function(values)
+        for _, value in ipairs(values) do
+            if value == "NoRuntimeChecks" then
+                runtimechecks "Off"
+            elseif value == "NoIncrementalLink" then
+                incrementallink "Off"
+            else
+                error("Unsupported legacy Premake flag: " .. value)
+            end
+        end
+    end
+end
 
 include "Hazel/vendor/GLFW"
 include "Hazel/vendor/Glad"
+include "Hazel/vendor/imgui"
+flags = originalFlags
 
 project "Hazel"
     location "Hazel"
@@ -58,13 +78,15 @@ project "Hazel"
         "%{prj.name}/src",
         "%{prj.name}/vendor/spdlog/include",
         "%{IncludeDir.GLFW}",
-        "%{IncludeDir.Glad}"
+        "%{IncludeDir.Glad}",
+        "%{IncludeDir.ImGui}"
     }
 
     links
     {
         "GLFW",
         "Glad",
+        "ImGui",
         "opengl32.lib"
     }
 
@@ -84,7 +106,7 @@ project "Hazel"
         postbuildcommands
         {
             ('{MKDIR} "../bin/' .. outputdir .. '/Sandbox"'),
-            ('{COPY} "%{cfg.buildtarget.relpath}" "../bin/' .. outputdir .. '/Sandbox"')
+            ('{COPYFILE} "%{cfg.buildtarget.relpath}" "../bin/' .. outputdir .. '/Sandbox"')
         }
 
     filter "configurations:Debug"
